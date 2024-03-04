@@ -1,0 +1,54 @@
+e
+r
+t, Cowboys, Dallas, TX
+t, Rockets, Houston, TX
+t, Celtics, Boston, MA
+t, Colts, Indianapolis, IN
+c, 123456789, JohnDoe
+c, 234567890, JackDoe
+c, 345678901, MaryDoe
+c, 456789012, CookieDoe
+c, 567890123, TwaiKanDoe
+t, Colts, Baltimore, MD
+t, Pacers, Indianapolis, IN
+c, 123456789, JennyDoe
+c, 678901234, PaulDoe
+h, Celtics, 123456789, 2021/01/01
+h, Celtics, 678901234, 2021/01/01
+h, Rockets, 567890123, 2021/01/01
+h, Colts, 345678901, 2021/02/02
+h, Cowboys, 234567890, 2021/04/01
+g, 2021/06/02, Rockets, Cowboys
+g, 2021/06/02, Cowboys, Celtics
+g, 2021/06/02, Cowboys, Pacers
+g, 2021/06/04, Celtics, Pacers, 
+s, 2021/06/02, Rockets, Cowboys, 4, 3
+s, 2021/06/02, Cowboys, Pacers, 3, 2
+s, 2021/06/04, Celtics, Pacers, 0, 1
+H, Rockets, Celtics
+f, Celtics, 2021/03/03
+f, Rockets, 2021/03/03
+h, Rockets, 123456789, 2021/03/04
+h, Celtics, 678901234, 2021/03/04
+g, 2021/06/05, Rockets, Colts
+g, 2021/06/05, Rockets, Colts
+g, 2021/06/06, Celtics, Cowboys
+g, 2021/06/06, Celtics, Rockets
+g, 2021/06/07, Colts, Cowboys
+s, 2021/06/09, Colts, Cowboys, 3, 4
+g, 2021/06/09, Lakers, Colts
+s, 2021/06/09, Lakers, Colts, 1, 3
+s, 2021/06/09, Colts, Rockets
+s, 2021/06/05, Rockets, Colts, 0, 1
+s, 2021/06/06, Celtics, Cowboys, 5, 0.5
+s, 2021/06/06, Celtics, Rockets, 3, 4
+s, 2021/06/07, Cowboys, Colts, 5, 5
+s, 2021/06/07, Colts, Cowboys, 2, 2
+f, Rockets
+h, Lakers, 123456789, 2021/05/05
+h, Rockets, 456789012, 2021/05/06
+T, Celtics
+C, 456789012
+C, 123456789
+G, Rockets, Colts
+S, 2021/01/01, 2021/10/10

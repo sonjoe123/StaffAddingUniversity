@@ -1,0 +1,41 @@
+e
+r
+t,Celtics,Boston,MA
+t,Heat,Miami,FL
+t,Lakers,Los Angeles,CA
+t,Clippers,Los Angeles,CA
+t,Bucks,Milwaukee,WI
+c,123456789,Brad Stevens
+c,234567890,Erik Spoelstra
+c,345678901,Frank Vogel
+c,456789012,Ty Lue
+c,567890123,Mike Budenholzer
+h,Celtics,123456789,2021/10/1
+h,Heat,234567890,2021/10/2
+h,Lakers,345678901,2021/10/3
+h,Clippers,456789012,2021/10/4
+h,Bucks,567890123,2021/10/5
+f,Celtics,2021/11/1
+f,Heat,2021/11/2
+f,Lakers,2021/11/3
+g,2021/12/1,Celtics,Heat
+g,2021/12/2,Heat,Lakers
+g,2021/12/3,Lakers,Clippers
+g,2021/12/4,Clippers,Bucks
+s,2021/12/1,Celtics,Heat,81,93
+s,2021/12/2,Heat,Lakers,99,120
+s,2021/12/3,Lakers,Clippers,89,102
+t,Celtics,New City,NC
+c,123456789,New Coach
+h,Bucks,234567890,2021/10/10
+f,Clippers,2021/11/15
+s,2021/12/10,Lakers,Clippers,107,112
+T,Wildcats
+T,Heat
+C,678901235
+C,789012346
+G,Heat,Lakers
+S,2021/01/01,2021/12/31
+S,2021/12/31,2021/01/01
+H,Heat,Lakers
+H,Nonexistent Team 1,Nonexistent Team 2

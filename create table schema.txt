@@ -1,0 +1,185 @@
+-- Create Departments table
+CREATE TABLE Departments (
+    DepartmentName VARCHAR(255) PRIMARY KEY,
+    DepartmentCode VARCHAR(4) UNIQUE NOT NULL
+);
+
+-- Create Faculty table
+CREATE TABLE Faculty (
+    FacultyID INT PRIMARY KEY,
+    FacultyName VARCHAR(255) NOT NULL,
+    FacultyEmail VARCHAR(255) NOT NULL,
+    FacultyRank ENUM('full', 'associate', 'assistant', 'adjunct') NOT NULL,
+    DepartmentCode VARCHAR(4) NOT NULL,
+    FOREIGN KEY (DepartmentCode) REFERENCES Departments(DepartmentCode)
+);
+
+-- Create Programs table
+CREATE TABLE Programs (
+    ProgramName VARCHAR(255)  UNIQUE,
+    FacultyID INT NOT NULL,
+    DepartmentCode VARCHAR(255) NOT NULL,  
+    PRIMARY KEY (ProgramName, DepartmentCode, FacultyID),
+    FOREIGN KEY (FacultyID) REFERENCES Faculty(FacultyID),
+    FOREIGN KEY (DepartmentCode) REFERENCES Departments(DepartmentCode)
+);
+
+-- Create Courses table
+CREATE TABLE Courses (
+    CourseID VARCHAR(8),
+    Title VARCHAR(255) NOT NULL,
+    Description TEXT,
+    DepartmentCode VARCHAR(255) NOT NULL,
+    ProgramName VARCHAR(255) NOT NULL,
+    PRIMARY KEY (CourseID, ProgramName, DepartmentCode),
+    FOREIGN KEY (ProgramName) REFERENCES Programs(ProgramName),
+    FOREIGN KEY (DepartmentCode) REFERENCES Departments(DepartmentCode)
+);
+
+-- Create LearningObjectives table
+CREATE TABLE LearningObjectives (
+    ObjectiveCode VARCHAR(10),
+    Description TEXT,
+    ProgramName VARCHAR(255) NOT NULL,
+    CourseID VARCHAR(8),
+    PRIMARY KEY (ObjectiveCode, CourseID, ProgramName),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID),
+    FOREIGN KEY (ProgramName) REFERENCES Programs(ProgramName)
+);
+
+-- Create SubObjectives table
+CREATE TABLE SubObjectives (
+    SubObjectiveCode VARCHAR(20),
+    ObjectiveCode VARCHAR(10),
+    Description TEXT,   
+    CourseID VARCHAR(8),
+    PRIMARY KEY (SubObjectiveCode, CourseID, ObjectiveCode),
+    FOREIGN KEY (ObjectiveCode) REFERENCES LearningObjectives(ObjectiveCode),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID),
+    CHECK (SubObjectiveCode LIKE CONCAT(ObjectiveCode, '.%'))
+);
+
+-- Create Sections table
+CREATE TABLE Sections (
+    CourseID VARCHAR(8) NOT NULL,
+    Semester ENUM('Fall', 'Spring','Summer') NOT NULL,
+    SectionNumber CHAR(3) NOT NULL,
+    Year YEAR,
+    EnrollNum INT NOT NULL,
+    FacultyID INT NOT NULL,
+    PRIMARY KEY (CourseID, Semester, SectionNumber, Year),
+    FOREIGN KEY (CourseID) REFERENCES Courses(CourseID),
+    FOREIGN KEY (FacultyID) REFERENCES Faculty(FacultyID),
+    CHECK (LENGTH(SectionNumber) = 3 AND SectionNumber BETWEEN '000' AND '999')
+);
+
+-- Create Evaluation table
+CREATE TABLE Evaluation (
+    CourseID VARCHAR(8) NOT NULL,
+    ObjectiveCode VARCHAR(255) NOT NULL,
+    SubObjectiveCode VARCHAR(20),    
+    EvaluationMethod VARCHAR(255) NOT NULL,
+    StudentsMetObjective INT NOT NULL,
+    Semester ENUM('Fall', 'Spring', 'Summer') NOT NULL,
+    Year YEAR NOT NULL,
+    SectionNumber CHAR(3) NOT NULL,
+    PRIMARY KEY (CourseID, ObjectiveCode, Semester, Year, SectionNumber),
+    UNIQUE KEY (CourseID, SubObjectiveCode, ObjectiveCode, Semester, Year, SectionNumber),
+    FOREIGN KEY (CourseID, Semester, SectionNumber, Year) REFERENCES Sections(CourseID, Semester, SectionNumber, Year),
+    FOREIGN KEY (ObjectiveCode) REFERENCES LearningObjectives(ObjectiveCode),
+    FOREIGN KEY (SubObjectiveCode) REFERENCES SubObjectives(SubObjectiveCode),
+    CHECK (SubObjectiveCode IS NULL OR SubObjectiveCode LIKE CONCAT(ObjectiveCode, '.%'))
+);
+DELIMITER //
+
+-- Create trigger to check if faculty belongs to the specified department for Programs table
+CREATE TRIGGER check_faculty_department
+BEFORE INSERT ON Programs
+FOR EACH ROW
+BEGIN
+    DECLARE faculty_department VARCHAR(4);
+
+    -- Get the department of the assigned faculty
+    SELECT DepartmentCode INTO faculty_department
+    FROM Faculty
+    WHERE FacultyID = NEW.FacultyID;
+
+    -- Check if the faculty belongs to the specified department
+    IF faculty_department <> NEW.DepartmentCode THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Faculty does not belong to the specified department.';
+    END IF;
+END;
+
+//
+
+DELIMITER ;
+
+-- Create trigger to check if faculty belongs to the department of the specified course for the given section
+DELIMITER //
+
+CREATE TRIGGER check_faculty_department_section
+BEFORE INSERT ON Sections
+FOR EACH ROW
+BEGIN
+    DECLARE faculty_department VARCHAR(4);
+
+    -- Get the department of the assigned faculty from the Courses table
+    SELECT DepartmentCode INTO faculty_department
+    FROM Courses
+    WHERE CourseID = NEW.CourseID;
+
+    -- Check if the faculty belongs to the department of the specified course
+    IF faculty_department IS NULL OR faculty_department <> (
+        SELECT DepartmentCode
+        FROM Faculty
+        WHERE FacultyID = NEW.FacultyID
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Faculty does not belong to the department of the specified course for the given section.';
+    END IF;
+END;
+
+//
+
+DELIMITER ;
+
+-- Create trigger to check the validity of the DepartmentCode in CourseID for Courses table
+DELIMITER //
+CREATE TRIGGER courses_check_id
+BEFORE INSERT ON Courses
+FOR EACH ROW
+BEGIN
+    DECLARE dept_code VARCHAR(4);
+    SELECT DepartmentCode INTO dept_code FROM Departments WHERE DepartmentCode = SUBSTRING(NEW.CourseID, 1, 4);
+    IF dept_code IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid DepartmentCode in CourseID';
+    END IF;
+END;
+//
+DELIMITER ;
+
+-- Create trigger to check if the number of students met the objective is less than or equal to the number of enrolled students for the specified section
+DELIMITER //
+
+CREATE TRIGGER check_students_met_objective
+BEFORE INSERT ON Evaluation
+FOR EACH ROW
+BEGIN
+    DECLARE enrolled_students INT;
+    
+    -- Get the number of enrolled students for the specified section
+    SELECT EnrollNum INTO enrolled_students
+    FROM Sections
+    WHERE CourseID = NEW.CourseID AND Semester = NEW.Semester AND Year = NEW.Year AND SectionNumber = NEW.SectionNumber;
+
+    -- Check if the number of students met the objective is less than or equal to the number of enrolled students
+    IF NEW.StudentsMetObjective > enrolled_students THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Number of students met objective cannot exceed the number of enrolled students for the specified section.';
+    END IF;
+END;
+//
+
+DELIMITER ;
